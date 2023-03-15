@@ -1,5 +1,6 @@
 # Social Media Analytics
 
+### [Specification](https://github.com/LOOP115/Social_Media_Analytics/blob/main/resources/ass1-spec.pdf)
 
 ### Problem Description
 
