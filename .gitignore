@@ -1,2 +1,5 @@
 .idea/
 .venv/
+data/bigTwitter.json
+data/smallTwitter.json
+data/tinyTwitter.json
