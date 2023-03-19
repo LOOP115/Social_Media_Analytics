@@ -44,10 +44,6 @@ state_dict = {
 
 rural_pattern = r'^.[r].*'
 
-comm = MPI.COMM_WORLD
-size = comm.Get_size()
-rank = comm.Get_rank()
-
 
 def create_int_dict():
     return defaultdict(int)
@@ -104,66 +100,74 @@ def analyze(twitter_data, sal_data):
     return res
 
 
-def parallel_processing(data):
-    chunk_size = len(data) // size
-    start = rank * chunk_size
-    if rank != size - 1:
-        end = (rank + 1) * chunk_size
-    else:
-        end = len(data)
-    return data[start:end]
+def split_data(data, num_parts):
+    avg_len = len(data) // num_parts
+    return [data[i * avg_len:(i + 1) * avg_len] for i in range(num_parts)]
 
 
-def main():
-    start_time = time.time()
-    twitter_data = load_twitter_data('data/tinyTwitter.json')
-    sal_data = load_sal_data('data/sal.json')
+comm = MPI.COMM_WORLD
+size = comm.Get_size()
+rank = comm.Get_rank()
 
-    twitter_data_chunk = parallel_processing(twitter_data)
+start_time = time.time()
+twitter_data = load_twitter_data('data/smallTwitter.json')
+sal_data = load_sal_data('data/sal.json')
 
-    batch = analyze(twitter_data_chunk, sal_data)
-    results = comm.gather(batch, root=0)
+# Split data into chunks for each process
+if rank == 0:
+    data_chunks = split_data(twitter_data, size)
+else:
+    data_chunks = None
 
-    if rank == 0:
-        stat = {
-            'tweets_cnt': [0] * 9,
-            'top_users': Counter(),
-            'cities_users': defaultdict(create_int_dict)
-        }
+# Scatter the data_chunks to all processes
+data_chunk = comm.scatter(data_chunks, root=0)
 
-        for result in results:
-            stat['tweets_cnt'] = [stat['tweets_cnt'][i] + result['tweets_cnt'][i] for i in range(9)]
-            stat['top_users'] += result['top_users']
+# Analyze the data_chunk
+batch = analyze(data_chunk, sal_data)
 
-            for author_id, cities in result['cities_users'].items():
-                stat['cities_users'][author_id].update(cities)
+# Gather the results from all processes
+results = comm.gather(batch, root=0)
 
-        top_users = stat['top_users'].most_common(10)
-        most_cities_users = dict(sorted(stat['cities_users'].items(), key=lambda x: (len(x[1]), stat['top_users'][x[0]]), reverse=True))
+if rank == 0:
+    stat = {
+        'tweets_cnt': [0] * 9,
+        'top_users': Counter(),
+        'cities_users': defaultdict(create_int_dict)
+    }
 
-        print("Task 1: Count the number of different tweets made in the Greater Capital cities of Australia")
-        gcc_cnt = {"Greater Capital City": gcc_full_list, "Number of Tweets Made": stat["tweets_cnt"]}
-        df_gcc_cnt = pd.DataFrame(data=gcc_cnt)
-        print(df_gcc_cnt.to_string(index=False))
+    for result in results:
+        stat['tweets_cnt'] = [stat['tweets_cnt'][i] + result['tweets_cnt'][i] for i in range(9)]
+        stat['top_users'] += result['top_users']
 
-        print("\nTop 10 tweeters")
-        cnt = 1
-        for author_id, count in top_users:
-            print(f"#{cnt} {author_id}: {count} tweets")
-            cnt += 1
+        for author_id, cities in result['cities_users'].items():
+            stat['cities_users'][author_id].update(cities)
 
-        cnt = 1
-        print("\nTop 10 tweeters making tweets from the most different locations")
-        for author_id, cities in most_cities_users.items():
-            if cnt == 11:
-                break
-            print(f"#{cnt} {author_id}: {stat['top_users'][author_id]} {cities.items()}")
-            cnt += 1
+    top_users = stat['top_users'].most_common(10)
+    most_cities_users = dict(sorted(stat['cities_users'].items(), key=lambda x: (len(x[1]), stat['top_users'][x[0]]), reverse=True))
+
+    print("Task 1: Count the number of different tweets made in the Greater Capital cities of Australia")
+    gcc_cnt = {"Greater Capital City": gcc_full_list, "Number of Tweets Made": stat["tweets_cnt"]}
+    df_gcc_cnt = pd.DataFrame(data=gcc_cnt)
+    print(df_gcc_cnt.to_string(index=False))
+
+    print("\nTop 10 tweeters")
+    cnt = 1
+    for author_id, count in top_users:
+        print(f"#{cnt} {author_id}: {count} tweets")
+        cnt += 1
+
+    cnt = 1
+    print("\nTop 10 tweeters making tweets from the most different locations")
+    for author_id, cities in most_cities_users.items():
+        if cnt == 11:
+            break
+        print(f"#{cnt} {author_id}: {stat['top_users'][author_id]} {cities.items()}")
+        cnt += 1
 
 
-    end_time = time.time()
-    print(f"\nExecution time: {round((end_time - start_time), 2)}s")
+end_time = time.time()
+print(f"\nExecution time: {round((end_time - start_time), 2)}s")
 
 
-if __name__ == '__main__':
-    main()
+# if __name__ == '__main__':
+#     main()
