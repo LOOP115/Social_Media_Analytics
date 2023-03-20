@@ -4,7 +4,7 @@ import ijson
 from collections import Counter, defaultdict
 import time
 import re
-
+import numpy as np
 
 gcc_list = [
     "1gsyd",
@@ -160,6 +160,13 @@ def main():
             print(f"#{cnt} {author_id}: {count} tweets")
             cnt += 1
 
+        #####
+        df_top_user = pd.DataFrame(top_users, columns=['Author Id ', 'Number of Tweets Made'])
+        rank_list = ['#1', '#2', '#3', '#4', '#5', '#6', '#7', '#8', '#9', '#10']
+        df_top_user.insert(0, 'Rank', rank_list, True)
+        print(df_top_user)
+        #####
+
         cnt = 1
         print("\nTask 3: Identify the users that have tweeted from the most different Greater Capital cities")
         for author_id, cities in most_cities_users.items():
@@ -167,6 +174,43 @@ def main():
                 break
             print(f"#{cnt} {author_id}: {stat['top_users'][author_id]} {cities.items()}")
             cnt += 1
+
+        #####
+        n_uniq_city = []
+
+        for i in list(most_cities_users.values())[0:10]:
+            n_uniq_city.append(len(i))
+
+        df_single_city_cnt = pd.DataFrame(data=list(most_cities_users.values())[0:10])
+
+        df_single_city_cnt = df_single_city_cnt.reindex(sorted(df_single_city_cnt.columns), axis=1)
+
+        df_single_city_cnt['total_tw'] = df_single_city_cnt.sum(axis=1)
+        df_single_city_cnt['n_uniq_city'] = n_uniq_city
+        df_single_city_cnt['Author Id '] = list(most_cities_users.keys())[0:10]
+
+        df_scc_output = pd.DataFrame(data={'Rank': rank_list,
+                                           'Author Id ': list(most_cities_users.keys())[0:10]})
+
+        output_str_list = []
+
+        for index, row in df_single_city_cnt.iterrows():
+
+            r = row.dropna().astype(np.int64).astype(str)
+            output_str = f'{row.n_uniq_city}(#{r.total_tw} tweets - '
+            keys = list(r.keys())[:-3]
+            values = list(r.values)[:-3]
+
+            for i in range(len(keys)):
+                #         print(values[i]+keys[i][1:] +,)
+                output_str = output_str + values[i] + keys[i][1:] + ', '
+            output_str = output_str[:-2] + ')'
+            output_str_list.append(output_str)
+
+        df_scc_output['Number of Unique City Locations and #Tweets'] = output_str_list
+
+        print(df_scc_output.to_string(index=False))
+        #####
 
         end_time = time.time()
         print(f"\nExecution Time: {round((end_time - start_time), 2)}s")
