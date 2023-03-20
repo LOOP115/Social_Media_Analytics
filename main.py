@@ -4,7 +4,7 @@ import ijson
 from collections import Counter, defaultdict
 import time
 import re
-
+import numpy as np
 
 gcc_list = [
     "1gsyd",
@@ -44,9 +44,7 @@ state_dict = {
 
 rural_pattern = r'^.[r].*'
 
-comm = MPI.COMM_WORLD
-size = comm.Get_size()
-rank = comm.Get_rank()
+rank_list = ['#1', '#2', '#3', '#4', '#5', '#6', '#7', '#8', '#9', '#10']
 
 
 def create_int_dict():
@@ -104,24 +102,36 @@ def analyze(twitter_data, sal_data):
     return res
 
 
-def parallel_processing(data):
-    chunk_size = len(data) // size
-    start = rank * chunk_size
-    if rank != size - 1:
-        end = (rank + 1) * chunk_size
-    else:
-        end = len(data)
-    return data[start:end]
+def split_data(data, size):
+    avg_len = len(data) // size
+    return [data[i * avg_len:(i + 1) * avg_len] for i in range(size)]
 
 
 def main():
     start_time = time.time()
-    twitter_data = load_twitter_data('data/tinyTwitter.json')
+
+    # MPI settings
+    comm = MPI.COMM_WORLD
+    rank = comm.Get_rank()
+    size = comm.Get_size()
+
+    # Create a new communicator with processes grouped by the nearest node
+    # local_comm = comm.Split_type(MPI.COMM_TYPE_SHARED, key=rank)
+    # local_rank = local_comm.Get_rank()
+    # local_size = local_comm.Get_size()
+
+    twitter_data = load_twitter_data('data/smallTwitter.json')
     sal_data = load_sal_data('data/sal.json')
 
-    twitter_data_chunk = parallel_processing(twitter_data)
+    # Split data into chunks for each process
+    if rank == 0:
+        data_chunks = split_data(twitter_data, size)
+    else:
+        data_chunks = None
 
-    batch = analyze(twitter_data_chunk, sal_data)
+    data_chunk = comm.scatter(data_chunks, root=0)
+    batch = analyze(data_chunk, sal_data)
+    comm.Barrier()
     results = comm.gather(batch, root=0)
 
     if rank == 0:
@@ -139,30 +149,47 @@ def main():
                 stat['cities_users'][author_id].update(cities)
 
         top_users = stat['top_users'].most_common(10)
-        most_cities_users = dict(sorted(stat['cities_users'].items(), key=lambda x: (len(x[1]), stat['top_users'][x[0]]), reverse=True))
+        most_cities_users = dict(sorted(stat['cities_users'].items(),
+                                        key=lambda x: (len(x[1]), stat['top_users'][x[0]]), reverse=True))
 
-        print("Task 1: Count the number of different tweets made in the Greater Capital cities of Australia")
+        print("\nTask 1: Count the number of different tweets made in the Greater Capital cities of Australia")
         gcc_cnt = {"Greater Capital City": gcc_full_list, "Number of Tweets Made": stat["tweets_cnt"]}
         df_gcc_cnt = pd.DataFrame(data=gcc_cnt)
         print(df_gcc_cnt.to_string(index=False))
 
-        print("\nTop 10 tweeters")
-        cnt = 1
-        for author_id, count in top_users:
-            print(f"#{cnt} {author_id}: {count} tweets")
-            cnt += 1
+        print("\nTask 2: Identify the Twitter accounts (users) that have made the most tweets")
+        df_top_user = pd.DataFrame(top_users, columns=['Author Id', 'Number of Tweets Made'])
+        df_top_user.insert(0, 'Rank', rank_list, True)
+        print(df_top_user.to_string(index=False))
 
-        cnt = 1
-        print("\nTop 10 tweeters making tweets from the most different locations")
-        for author_id, cities in most_cities_users.items():
-            if cnt == 11:
-                break
-            print(f"#{cnt} {author_id}: {stat['top_users'][author_id]} {cities.items()}")
-            cnt += 1
+        print("\nTask 3: Identify the users that have tweeted from the most different Greater Capital cities")
+        n_uniq_city = []
+        for i in list(most_cities_users.values())[0:10]:
+            n_uniq_city.append(len(i))
 
+        df_single_city_cnt = pd.DataFrame(data=list(most_cities_users.values())[0:10])
+        df_single_city_cnt = df_single_city_cnt.reindex(sorted(df_single_city_cnt.columns), axis=1)
+        df_single_city_cnt['total_tw'] = df_single_city_cnt.sum(axis=1)
+        df_single_city_cnt['n_uniq_city'] = n_uniq_city
+        df_single_city_cnt['Author Id'] = list(most_cities_users.keys())[0:10]
+        df_scc_output = pd.DataFrame(data={'Rank': rank_list, 'Author Id': list(most_cities_users.keys())[0:10]})
 
-    end_time = time.time()
-    print(f"\nExecution time: {round((end_time - start_time), 2)}s")
+        output_str_list = []
+        for index, row in df_single_city_cnt.iterrows():
+            r = row.dropna().astype(np.int64).astype(str)
+            output_str = f'{row.n_uniq_city}(#{r.total_tw} tweets - '
+            keys = list(r.keys())[:-3]
+            values = list(r.values)[:-3]
+            for i in range(len(keys)):
+                output_str = output_str + values[i] + keys[i][1:] + ', '
+            output_str = output_str[:-2] + ')'
+            output_str_list.append(output_str)
+
+        df_scc_output['Number of Unique City Locations and #Tweets'] = output_str_list
+        print(df_scc_output.to_string(index=False))
+
+        end_time = time.time()
+        print(f"\nExecution Time: {round((end_time - start_time), 2)}s")
 
 
 if __name__ == '__main__':
