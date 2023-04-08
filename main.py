@@ -4,16 +4,16 @@ from collections import Counter, defaultdict
 import time
 import re
 import numpy as np
-import json
 import os
 import sys
+import ijson
 
 
 data_paths = {"tiny": "data/tinyTwitter.json",
               "small": "data/smallTwitter.json",
               "big": "data/bigTwitter.json"}
 
-twitter_path = "data/tinyTwitter.json"
+twitter_path = "data/smallTwitter.json"
 args = sys.argv
 if len(args) > 1:
     data_type = args[1]
@@ -61,10 +61,16 @@ state_dict = {
 }
 
 rural_pattern = r'^.[r].*'
+
 json_start = b'^ {2}{'
 json_end = b'^ {2}}'
-json_end_pad = b'  }\n'
-newlines = [b',\n', b']\n', b']\r\n']
+
+tweet_head = b'^    "_id"'
+
+pad_start = b'[\n'
+pad_end = b'  }\n]\n'
+
+batch_limit = 1024 * 1024 * 1024
 
 rank_list = ['#1', '#2', '#3', '#4', '#5', '#6', '#7', '#8', '#9', '#10']
 
@@ -87,50 +93,109 @@ def load_and_process_json(file_path, size, rank, sal_data):
     }
 
     with open(file_path, 'rb') as file:
-        if start == 0:
-            file.readline()
+        start, end = get_batch_start_end(file, start, end, rank, size)
+        file.seek(start)
+        batch_size = end - start
 
-        if start != 0:
-            file.seek(start)
-            while True:
-                line = file.readline()
-                if re.match(json_start, line) or not line:
-                    break
-                start += len(line)
-            file.seek(start)
+        if batch_size > batch_limit:
+            num_batch = (batch_size // batch_limit) + 1
 
-        while file.tell() < end:
-            tweet_raw = b""
-            while True:
-                # Newline bug
-                if tweet_raw in newlines:
-                    break
-                line = file.readline()
-                if re.match(json_end, line):
-                    tweet_raw += json_end_pad
-                    try:
-                        tweet = json.loads(tweet_raw.decode("utf-8"))
-                    except json.JSONDecodeError as e:
-                        print(f"JSONDecodeError at rank {rank}: {e}")
-                        print(tweet_raw)
-                        print("\n\n")
+            for i in range(num_batch):
+                tmp_start = start + i * batch_limit
+                tmp_end = tmp_start + batch_limit if i != num_batch - 1 else end
+                tmp_start, tmp_end = get_piece_start_end(file, tmp_start, tmp_end, i, num_batch - 1)
+
+                file.seek(tmp_start)
+                json_raw = pad_start + file.read(tmp_end - tmp_start) + pad_end
+                items = ijson.items(json_raw, 'item')
+
+                for tweet in items:
                     analyze_tweet(tweet, sal_data, stat)
-                    break
-                tweet_raw += line
+
+        else:
+            json_raw = pad_start + file.read(end - start) + pad_end
+            items = ijson.items(json_raw, 'item')
+
+            for tweet in items:
+                analyze_tweet(tweet, sal_data, stat)
+
     return stat
+
+
+def get_batch_start_end(file, start, end, rank, size):
+    file.seek(start)
+    if start == 0:
+        line = file.readline()
+        start += len(line)
+    else:
+        while True:
+            line = file.readline()
+            if re.match(json_start, line):
+                next_line = file.readline()
+                if re.match(tweet_head, next_line):
+                    break
+                else:
+                    start += len(next_line)
+            start += len(line)
+
+    if rank < size - 1:
+        file.seek(end)
+        while True:
+            line = file.readline()
+            if re.match(json_end, line):
+                next_line = file.readline()
+                if re.match(json_start, next_line):
+                    end += len(line) - 6
+                    break
+                else:
+                    end += len(next_line)
+            end += len(line)
+    else:
+        end -= 6
+    return start, end
+
+
+def get_piece_start_end(file, start, end, index, tail):
+    if index != 0:
+        file.seek(start)
+        while True:
+            line = file.readline()
+            if re.match(json_start, line):
+                next_line = file.readline()
+                if re.match(tweet_head, next_line):
+                    break
+                else:
+                    start += len(next_line)
+            start += len(line)
+
+    if index != tail:
+        file.seek(end)
+        while True:
+            line = file.readline()
+            if re.match(json_end, line):
+                next_line = file.readline()
+                if re.match(json_start, next_line):
+                    end += len(line) - 6
+                    break
+                else:
+                    end += len(next_line)
+            end += len(line)
+
+    return start, end
 
 
 def load_sal_data(file):
     data = {}
     with open(file, 'r', encoding='utf-8') as file:
-        suburbs_data = json.load(file)
-    for suburb, values in suburbs_data.items():
-        data[suburb.lower()] = {
-            'ste': values['ste'],
-            'gcc': values['gcc'],
-            'sal': values['sal'],
-            'ste_name': state_dict[values['ste']]
-        }
+        suburbs_data = ijson.items(file, '')
+        for suburbs in suburbs_data:
+            for suburb, values in suburbs.items():
+                data[suburb.lower()] = {
+                    'ste': values['ste'],
+                    'gcc': values['gcc'],
+                    'sal': values['sal'],
+                    'ste_name': state_dict[values['ste']]
+                }
     return data
 
 
@@ -161,17 +226,12 @@ def process():
     raw_twitter_stats = comm.gather(batch, root=0)
 
     if rank == 0:
-        twitter_stats = []
-        for raw_twitter_stat in raw_twitter_stats:
-            twitter_stats.append(raw_twitter_stat)
-        end_time = time.time()
-        exec_time = end_time - start_time
-        return twitter_stats, exec_time
+        twitter_stats = [raw_twitter_stat for raw_twitter_stat in raw_twitter_stats]
+        return twitter_stats, start_time
     return None
 
 
-def print_stats(results, exec_time):
-    # start_time = time.time()
+def print_stats(results, start_time):
     stat = {
         'tweets_cnt': [0] * 9,
         'top_users': Counter(),
@@ -230,8 +290,7 @@ def print_stats(results, exec_time):
     df_scc_output['Number of Unique City Locations and #Tweets'] = output_str_list
     print(df_scc_output.to_string(index=False))
 
-    print(f"\nData Processing Time: {round(exec_time, 2)}s")
-    # print(f"\nData Collection Time: {round(time.time() - start_time, 2)}s")
+    print(f"\nExecution Time: {round(time.time() - start_time, 2)}s\n\n")
 
 
 if __name__ == '__main__':
