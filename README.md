@@ -52,16 +52,6 @@ sbatch 2n8c.slurm
 
 
 
-```
-mpiexec -n [NUM_PROCESSES] python main.py tiny
-
-mpiexec -n [NUM_PROCESSES] python main.py small
-
-mpiexec -n [NUM_PROCESSES] python main.py big
-```
-
-
-
 ### Problem Description
 
 Your task in this programming assignment is to implement a parallelized application leveraging the University of Melbourne HPC facility SPARTAN.
