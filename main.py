@@ -13,7 +13,7 @@ data_paths = {"tiny": "data/tinyTwitter.json",
               "small": "data/smallTwitter.json",
               "big": "data/bigTwitter.json"}
 
-twitter_path = "data/smallTwitter.json"
+twitter_path = "data/tinyTwitter.json"
 args = sys.argv
 if len(args) > 1:
     data_type = args[1]
