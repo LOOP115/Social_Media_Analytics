@@ -2,6 +2,18 @@
 
 ### [Specification](https://github.com/LOOP115/Social_Media_Analytics/blob/main/resources/ass1-spec.pdf)
 
+
+
+```
+mpiexec -n [NUM_PROCESSES] python main.py tiny
+
+mpiexec -n [NUM_PROCESSES] python main.py small
+
+mpiexec -n [NUM_PROCESSES] python main.py big
+```
+
+
+
 ### Problem Description
 
 Your task in this programming assignment is to implement a parallelized application leveraging the University of Melbourne HPC facility SPARTAN.
@@ -61,5 +73,5 @@ Your report should include the actual results tables as outlined above and a sin
 
 ### Submission
 
-The assignment should be submitted to Canvas as a ***zip*** file. The zip file must be named with the students named in each team and their student Ids. That is, *ForenameSurname-StudentId:ForenameSurname-StudentId* might be *SteveJobs-12345:BillGates-23456.zip*. Only one report is required per student pair and *only one student needs to upload this report*. The deadline for submitting the assignment is: ***Wednesday 5th April (by 12 noon!)***.
+The assignment should be submitted to Canvas as a ***zip*** file. The zip file must be named with the students named in each team and their student Ids. That is, *ForenameSurname-StudentId:ForenameSurname-StudentId* might be *SteveJobs-12345:BillGates-23456.zip*. Only one report is required per student pair and *only one student needs to upload this report*.
 
