@@ -60,6 +60,17 @@ state_dict = {
     '9': 'Other Territories'
 }
 
+state_abbr = {
+    'nsw': 'new south wales',
+    'vic.': 'victoria',
+    'qld': 'queensland',
+    'sa': 'south australia',
+    'wa': 'western australia',
+    'tas.': 'tasmania',
+    'nt': 'northern territory',
+    'act': 'australian capital territory'
+}
+
 rural_pattern = r'^.[r].*'
 
 json_start = b'^ {2}{'
@@ -70,7 +81,7 @@ tweet_head = b'^    "_id"'
 pad_start = b'[\n'
 pad_end = b'  }\n]\n'
 
-batch_limit = 1024 * 1024 * 1024
+batch_limit = 1024 * 1024 * 20
 
 rank_list = ['#1', '#2', '#3', '#4', '#5', '#6', '#7', '#8', '#9', '#10']
 
@@ -185,32 +196,41 @@ def get_piece_start_end(file, start, end, index, tail):
 
 
 def load_sal_data(file):
-    data = {}
+    data = defaultdict(dict)
     with open(file, 'r', encoding='utf-8') as file:
         suburbs_data = ijson.items(file, '')
         for suburbs in suburbs_data:
             for suburb, values in suburbs.items():
-                data[suburb.lower()] = {
-                    'ste': values['ste'],
-                    'gcc': values['gcc'],
-                    'sal': values['sal'],
-                    'ste_name': state_dict[values['ste']]
-                }
+                sub = re.match(r'^([^(]+)', suburb).group(1).strip().lower()
+                data[state_dict[values['ste']].lower()][sub] = values['gcc']
     return data
 
 
 def analyze_tweet(tweet, sal_data, stat):
     author_id = tweet['data']['author_id']
     full_name = tweet['includes']['places'][0]['full_name'].split(', ')
-    suburb = full_name[0].lower()
-    state = full_name[1].lower() if len(full_name) > 1 else ''
+    suburb = re.match(r'^([^(]+)', full_name[0]).group(1).strip().lower()
 
-    if suburb in sal_data.keys() and sal_data[suburb]['ste_name'].lower() == state:
-        gcc = sal_data[suburb]['gcc']
+    if len(full_name) == 1:
+        return
+
+    state = get_state(full_name[1])
+    if state in sal_data.keys() and suburb in sal_data[state].keys():
+        gcc = sal_data[state][suburb]
         if not re.match(rural_pattern, gcc):
             stat['tweets_cnt'][int(gcc[0]) - 1] += 1
             stat['top_users'][author_id] += 1
             stat['cities_users'][author_id][gcc] += 1
+
+
+def get_state(state):
+    state = state.lower()
+    if '(' not in state:
+        return state
+    else:
+        abbr = state[state.index("(") + 1: -1]
+        if abbr in state_abbr.keys():
+            return state_abbr[abbr]
 
 
 def process():
@@ -283,7 +303,7 @@ def print_stats(results, start_time):
         keys = list(r.keys())[:-3]
         values = list(r.values)[:-3]
         for i in range(len(keys)):
-            output_str = output_str + values[i] + keys[i][1:] + ', '
+            output_str = output_str + '#' + values[i] + keys[i][1:] + ', '
         output_str = output_str[:-2] + ')'
         output_str_list.append(output_str)
 
