@@ -36,11 +36,11 @@ mpiexec -n 8 python main.py big
 
 ### Run on Spartan
 
-| Resource                                    | Slurm                          | Output                             |
-| ------------------------------------------- | ------------------------------ | ---------------------------------- |
-| 1 node and 1 core                           | [1n1c.slurm](slurm/1n1c.slurm) | [1n1c.out](outputs/batch/1n1c.out) |
-| 1 node and 8 cores                          | [1n8c.slurm](1n8c.slurm)       | [1n8c.out](outputs/batch/1n8c.out) |
-| 2 nodes and 8 cores (with 4 cores per node) | [2n8c.slurm](2n8c.slurm)       | [2n8c.out](outputs/batch/2n8c.out) |
+| Resource                                    | Slurm                          |
+| ------------------------------------------- | ------------------------------ |
+| 1 node and 1 core                           | [1n1c.slurm](slurm/1n1c.slurm) |
+| 1 node and 8 cores                          | [1n8c.slurm](1n8c.slurm)       |
+| 2 nodes and 8 cores (with 4 cores per node) | [2n8c.slurm](2n8c.slurm)       |
 
 ```
 sbatch 1n1c.slurm
@@ -49,6 +49,15 @@ sbatch 1n8c.slurm
 
 sbatch 2n8c.slurm
 ```
+
+#### Performance on `bigTwitter`
+
+| Methods                          | 1n1c     | 1n8c    | 2n8c    |
+| -------------------------------- | -------- | ------- | ------- |
+| Read 1 tweet once and process    | 1082.72s | 143.54s | 141.67s |
+| Read 512KB data once and process | 350.56s  | 44.61s  | 46.31s  |
+| Read 16MB data once and process  | 343.49s  | 44.87s  | 46.16s  |
+| Read 1GB data once and process   | 401.96s  | 52.45s  | 46.99s  |
 
 
 
