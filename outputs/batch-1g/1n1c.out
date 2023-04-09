@@ -14,11 +14,11 @@ Processing tinyTwitter
 
 Task 1: Count the number of different tweets made in the Greater Capital cities of Australia
              Greater Capital City  Number of Tweets Made
-           1gsyd (Greater Sydney)                    213
-        2gmel (Greater Melbourne)                    128
+           1gsyd (Greater Sydney)                    216
+        2gmel (Greater Melbourne)                    129
          3gbri (Greater Brisbane)                     46
          4gade (Greater Adelaide)                     20
-            5gper (Greater Perth)                     71
+            5gper (Greater Perth)                     72
            6ghob (Greater Hobart)                      7
            7gdar (Greater Darwin)                      4
          8acte (Greater Canberra)                     12
@@ -39,36 +39,36 @@ Rank          Author Id  Number of Tweets Made
 
 Task 3: Identify the users that have tweeted from the most different Greater Capital cities
 Rank          Author Id Number of Unique City Locations and #Tweets
-  #1           51378153                      1(#32 tweets - 32gper)
-  #2          384233102                      1(#23 tweets - 23gsyd)
-  #3          156677140                      1(#17 tweets - 17gsyd)
-  #4          213903403                      1(#11 tweets - 11gbri)
-  #5         4648031797                        1(#9 tweets - 9gsyd)
-  #6           99367063                        1(#9 tweets - 9gmel)
-  #7            7050962                        1(#7 tweets - 7gsyd)
-  #8 935936493201305601                        1(#7 tweets - 7gmel)
-  #9           30839139                        1(#7 tweets - 7gper)
- #10           20522796                        1(#6 tweets - 6gsyd)
+  #1           51378153                     1(#32 tweets - #32gper)
+  #2          384233102                     1(#23 tweets - #23gsyd)
+  #3          156677140                     1(#17 tweets - #17gsyd)
+  #4          213903403                     1(#11 tweets - #11gbri)
+  #5         4648031797                       1(#9 tweets - #9gsyd)
+  #6           99367063                       1(#9 tweets - #9gmel)
+  #7            7050962                       1(#7 tweets - #7gsyd)
+  #8 935936493201305601                       1(#7 tweets - #7gmel)
+  #9           30839139                       1(#7 tweets - #7gper)
+ #10           20522796                       1(#6 tweets - #6gsyd)
 
-Execution Time: 0.09s
+Execution Time: 0.1s
 
 
 
-real	0m1.269s
-user	0m0.505s
-sys	0m0.319s
+real	0m1.202s
+user	0m0.555s
+sys	0m0.339s
 Processing smallTwitter
 
 Task 1: Count the number of different tweets made in the Greater Capital cities of Australia
              Greater Capital City  Number of Tweets Made
-           1gsyd (Greater Sydney)                  28933
-        2gmel (Greater Melbourne)                  32545
-         3gbri (Greater Brisbane)                   9994
-         4gade (Greater Adelaide)                   7236
-            5gper (Greater Perth)                   7084
+           1gsyd (Greater Sydney)                  28940
+        2gmel (Greater Melbourne)                  32679
+         3gbri (Greater Brisbane)                  10053
+         4gade (Greater Adelaide)                   7379
+            5gper (Greater Perth)                   7135
            6ghob (Greater Hobart)                    722
            7gdar (Greater Darwin)                    503
-         8acte (Greater Canberra)                   2510
+         8acte (Greater Canberra)                   2531
 9oter (Greater Other Territories)                      0
 
 Task 2: Identify the Twitter accounts (users) that have made the most tweets
@@ -85,37 +85,37 @@ Rank           Author Id  Number of Tweets Made
  #10  854992775640567808                    288
 
 Task 3: Identify the users that have tweeted from the most different Greater Capital cities
-Rank           Author Id                     Number of Unique City Locations and #Tweets
-  #1  702290904460169216 7(#11 tweets - 1gsyd, 3gmel, 1gbri, 3gade, 1gper, 1ghob, 1gdar)
-  #2  774694926135222272                5(#5 tweets - 1gmel, 1gbri, 1gper, 1gdar, 1acte)
-  #3           215292728                      4(#20 tweets - 5gsyd, 5gmel, 5gbri, 5gade)
-  #4 1392242182715707395                         3(#258 tweets - 3gsyd, 241gmel, 14acte)
-  #5 1348502962050535428                          3(#222 tweets - 2gsyd, 7gmel, 213acte)
-  #6 1382217768649465858                             3(#12 tweets - 1gade, 2gper, 9ghob)
-  #7           702047220                             3(#10 tweets - 4gbri, 2gper, 4ghob)
-  #8            20122128                                   2(#79 tweets - 78gsyd, 1acte)
-  #9 1027167886148689920                                  2(#76 tweets - 17gdar, 59acte)
- #10           350833995                                  2(#67 tweets - 47gmel, 20gper)
+Rank           Author Id                            Number of Unique City Locations and #Tweets
+  #1  702290904460169216 7(#12 tweets - #2gsyd, #3gmel, #1gbri, #3gade, #1gper, #1ghob, #1gdar)
+  #2  774694926135222272                  5(#5 tweets - #1gmel, #1gbri, #1gper, #1gdar, #1acte)
+  #3           215292728                         4(#20 tweets - #5gsyd, #5gmel, #5gbri, #5gade)
+  #4 1392242182715707395                             3(#258 tweets - #3gsyd, #241gmel, #14acte)
+  #5 1348502962050535428                              3(#222 tweets - #2gsyd, #7gmel, #213acte)
+  #6 1382217768649465858                                 3(#12 tweets - #1gade, #2gper, #9ghob)
+  #7           702047220                                 3(#10 tweets - #4gbri, #2gper, #4ghob)
+  #8            20122128                                        2(#79 tweets - #78gsyd, #1acte)
+  #9 1027167886148689920                                       2(#76 tweets - #17gdar, #59acte)
+ #10           350833995                                       2(#67 tweets - #47gmel, #20gper)
 
-Execution Time: 4.62s
+Execution Time: 5.27s
 
 
 
-real	0m5.464s
-user	0m4.439s
-sys	0m0.839s
+real	0m6.247s
+user	0m4.739s
+sys	0m1.297s
 Processing bigTwitter
 
 Task 1: Count the number of different tweets made in the Greater Capital cities of Australia
              Greater Capital City  Number of Tweets Made
-           1gsyd (Greater Sydney)                2092898
-        2gmel (Greater Melbourne)                2250432
-         3gbri (Greater Brisbane)                 847523
-         4gade (Greater Adelaide)                 449811
-            5gper (Greater Perth)                 585970
-           6ghob (Greater Hobart)                  89533
-           7gdar (Greater Darwin)                  46267
-         8acte (Greater Canberra)                 193643
+           1gsyd (Greater Sydney)                2094134
+        2gmel (Greater Melbourne)                2264847
+         3gbri (Greater Brisbane)                 849138
+         4gade (Greater Adelaide)                 461000
+            5gper (Greater Perth)                 589318
+           6ghob (Greater Hobart)                  90178
+           7gdar (Greater Darwin)                  46273
+         8acte (Greater Canberra)                 193825
 9oter (Greater Other Territories)                      0
 
 Task 2: Identify the Twitter accounts (users) that have made the most tweets
@@ -124,45 +124,45 @@ Rank           Author Id  Number of Tweets Made
   #2  826332877457481728                  27579
   #3 1250331934242123776                  25254
   #4 1423662808311287813                  21030
-  #5 1183144981252280322                  20650
+  #5 1183144981252280322                  20651
   #6  820431428835885059                  20063
   #7 1270672820792508417                  19801
   #8           233782487                  18179
   #9            84958532                  15676
- #10  719139700318081024                  15313
+ #10  719139700318081024                  15314
 
 Task 3: Identify the users that have tweeted from the most different Greater Capital cities
-Rank           Author Id                                           Number of Unique City Locations and #Tweets
-  #1 1429984556451389440         8(#1872 tweets - 10gsyd, 1832gmel, 6gbri, 2gade, 7gper, 1ghob, 1gdar, 13acte)
-  #2            17285408       8(#1163 tweets - 1019gsyd, 57gmel, 40gbri, 3gade, 7gper, 11ghob, 4gdar, 22acte)
-  #3  702290904460169216 8(#1035 tweets - 276gsyd, 228gmel, 191gbri, 102gade, 140gper, 36ghob, 18gdar, 44acte)
-  #4            87188071       8(#383 tweets - 108gsyd, 80gmel, 64gbri, 29gade, 50gper, 14ghob, 5gdar, 33acte)
-  #5          1361519083           8(#259 tweets - 11gsyd, 36gmel, 1gbri, 9gade, 1gper, 2ghob, 193gdar, 6acte)
-  #6           502381727            8(#250 tweets - 2gsyd, 214gmel, 8gbri, 4gade, 3gper, 8ghob, 1gdar, 10acte)
-  #7  921197448885886977          8(#197 tweets - 46gsyd, 55gmel, 37gbri, 20gade, 28gper, 4ghob, 1gdar, 6acte)
-  #8           601712763         8(#146 tweets - 44gsyd, 39gmel, 11gbri, 19gade, 14gper, 8ghob, 1gdar, 10acte)
-  #9          2647302752             8(#79 tweets - 13gsyd, 16gmel, 31gbri, 3gade, 4gper, 5ghob, 3gdar, 4acte)
- #10          3686036533         7(#2581 tweets - 401gsyd, 1546gmel, 91gbri, 47gade, 186gper, 84ghob, 226acte)
+Rank           Author Id                                                   Number of Unique City Locations and #Tweets
+  #1 1429984556451389440         8(#1872 tweets - #10gsyd, #1832gmel, #6gbri, #2gade, #7gper, #1ghob, #1gdar, #13acte)
+  #2            17285408       8(#1163 tweets - #1019gsyd, #57gmel, #40gbri, #3gade, #7gper, #11ghob, #4gdar, #22acte)
+  #3  702290904460169216 8(#1082 tweets - #281gsyd, #240gmel, #198gbri, #111gade, #151gper, #38ghob, #19gdar, #44acte)
+  #4            87188071       8(#388 tweets - #109gsyd, #82gmel, #65gbri, #29gade, #51gper, #14ghob, #5gdar, #33acte)
+  #5          1361519083           8(#259 tweets - #11gsyd, #36gmel, #1gbri, #9gade, #1gper, #2ghob, #193gdar, #6acte)
+  #6           502381727            8(#250 tweets - #2gsyd, #214gmel, #8gbri, #4gade, #3gper, #8ghob, #1gdar, #10acte)
+  #7  921197448885886977          8(#203 tweets - #46gsyd, #57gmel, #37gbri, #24gade, #28gper, #4ghob, #1gdar, #6acte)
+  #8           601712763         8(#146 tweets - #44gsyd, #39gmel, #11gbri, #19gade, #14gper, #8ghob, #1gdar, #10acte)
+  #9          2647302752             8(#79 tweets - #13gsyd, #16gmel, #31gbri, #3gade, #4gper, #5ghob, #3gdar, #4acte)
+ #10          3686036533          7(#2581 tweets - #401gsyd, #1546gmel, #91gbri, #47gade, #186gper, #84ghob, #226acte)
 
-Execution Time: 344.61s
+Execution Time: 401.96s
 
 
 
-real	5m45.604s
-user	5m6.025s
-sys	0m37.446s
-Job ID           : 46203226
+real	6m42.886s
+user	5m29.963s
+sys	1m10.973s
+Job ID           : 46231358
 Cluster          : spartan
 User/Project     : jiahchen4/comp90024
 Nodes            : 1
-Wall-clock time  : 00:06:20 / 01:00:00
+Wall-clock time  : 00:07:20 / 01:00:00
 
-Displaying overall resources usage from 2023-04-09 02:04:38 to 2023-04-09 02:10:58:
+Displaying overall resources usage from 2023-04-09 22:39:58 to 2023-04-09 22:47:18:
 
 NODE            CPU#        TOT%   ( USR   / SYS   / WIO   / IDLE  ) 
 
-spartan-bm024 : 
-                CPU# 1    : 95.0   (  84.4 /  10.6 /   0.3 /   4.7 ) 
+spartan-bm022 : 
+                CPU# 1    : 93.8   (  77.9 /  16.0 /   0.1 /   6.0 ) 
 
 
 Allocated CPUs            : 1    
@@ -170,7 +170,7 @@ Allocated CPUs            : 1
   CPUs with usage <50%    : 0    
   CPUs with usage >50%    : 1    
 
-Memory used (RAM)         : 30.8%  [1230MB of 4000MB]
+Memory used (RAM)         : 76.9%  [3077MB of 4000MB]
 
 --------------------------------------------
 

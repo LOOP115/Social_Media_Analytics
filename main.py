@@ -81,7 +81,7 @@ tweet_head = b'^    "_id"'
 pad_start = b'[\n'
 pad_end = b'  }\n]\n'
 
-batch_limit = 1024 * 1024 * 20
+batch_limit = 1024 * 1024 * 16
 
 rank_list = ['#1', '#2', '#3', '#4', '#5', '#6', '#7', '#8', '#9', '#10']
 
@@ -89,113 +89,72 @@ rank_list = ['#1', '#2', '#3', '#4', '#5', '#6', '#7', '#8', '#9', '#10']
 def create_int_dict():
     return defaultdict(int)
 
+# Extract the state name
+def get_state(state):
+    state = state.lower()
+    if '(' not in state:
+        return state
+    else:
+        abbr = state[(state.index("(") + 1): -1]
+        if abbr in state_abbr.keys():
+            return state_abbr[abbr]
 
-def load_and_process_json(file_path, size, rank, sal_data):
-    file_size = os.path.getsize(file_path)
-    chunk_size = file_size // size
+# Find the start of next twitter item from current file pointer
+def find_tweet_start(file, start):
+    while True:
+        line = file.readline()
+        if re.match(json_start, line):
+            next_line = file.readline()
+            if re.match(tweet_head, next_line):
+                return start
+            else:
+                start += len(next_line)
+        start += len(line)
 
-    start = rank * chunk_size
-    end = start + chunk_size if rank != size - 1 else file_size
+# Find the end of current twitter item from current file pointer
+def find_tweet_end(file, end):
+    while True:
+        line = file.readline()
+        if re.match(json_end, line):
+            next_line = file.readline()
+            if re.match(json_start, next_line):
+                end += len(line) - 6
+                return end
+            else:
+                end += len(next_line)
+        end += len(line)
 
-    stat = {
-        'tweets_cnt': [0] * 9,
-        'top_users': Counter(),
-        'cities_users': defaultdict(create_int_dict)
-    }
-
-    with open(file_path, 'rb') as file:
-        start, end = get_batch_start_end(file, start, end, rank, size)
-        file.seek(start)
-        batch_size = end - start
-
-        if batch_size > batch_limit:
-            num_batch = (batch_size // batch_limit) + 1
-
-            for i in range(num_batch):
-                tmp_start = start + i * batch_limit
-                tmp_end = tmp_start + batch_limit if i != num_batch - 1 else end
-                tmp_start, tmp_end = get_piece_start_end(file, tmp_start, tmp_end, i, num_batch - 1)
-
-                file.seek(tmp_start)
-                json_raw = pad_start + file.read(tmp_end - tmp_start) + pad_end
-                items = ijson.items(json_raw, 'item')
-
-                for tweet in items:
-                    analyze_tweet(tweet, sal_data, stat)
-
-        else:
-            json_raw = pad_start + file.read(end - start) + pad_end
-            items = ijson.items(json_raw, 'item')
-
-            for tweet in items:
-                analyze_tweet(tweet, sal_data, stat)
-
-    return stat
-
-
-def get_batch_start_end(file, start, end, rank, size):
+# Modify the start and end pointers of the batch to ensure twitter items are complete
+def fix_batch_start_end(file, start, end, rank, size):
     file.seek(start)
     if start == 0:
         line = file.readline()
         start += len(line)
     else:
-        while True:
-            line = file.readline()
-            if re.match(json_start, line):
-                next_line = file.readline()
-                if re.match(tweet_head, next_line):
-                    break
-                else:
-                    start += len(next_line)
-            start += len(line)
+        start = find_tweet_start(file, start)
 
     if rank < size - 1:
         file.seek(end)
-        while True:
-            line = file.readline()
-            if re.match(json_end, line):
-                next_line = file.readline()
-                if re.match(json_start, next_line):
-                    end += len(line) - 6
-                    break
-                else:
-                    end += len(next_line)
-            end += len(line)
+        end = find_tweet_end(file, end)
     else:
         end -= 6
+
     return start, end
 
-
-def get_piece_start_end(file, start, end, index, tail):
+# Modify the start and end pointers of the piece to ensure twitter items are complete
+def fix_piece_start_end(file, start, end, index, tail):
     if index != 0:
         file.seek(start)
-        while True:
-            line = file.readline()
-            if re.match(json_start, line):
-                next_line = file.readline()
-                if re.match(tweet_head, next_line):
-                    break
-                else:
-                    start += len(next_line)
-            start += len(line)
+        start = find_tweet_start(file, start)
 
     if index != tail:
         file.seek(end)
-        while True:
-            line = file.readline()
-            if re.match(json_end, line):
-                next_line = file.readline()
-                if re.match(json_start, next_line):
-                    end += len(line) - 6
-                    break
-                else:
-                    end += len(next_line)
-            end += len(line)
+        end = find_tweet_end(file, end)
 
     return start, end
 
-
-def load_sal_data(file):
+# Load and process sal.json
+def load_sal(file):
     data = defaultdict(dict)
     with open(file, 'r', encoding='utf-8') as file:
         suburbs_data = ijson.items(file, '')
@@ -205,7 +164,7 @@ def load_sal_data(file):
                 data[state_dict[values['ste']].lower()][sub] = values['gcc']
     return data
 
-
+# Analyze each tweet and update stats
 def analyze_tweet(tweet, sal_data, stat):
     author_id = tweet['data']['author_id']
     full_name = tweet['includes']['places'][0]['full_name'].split(', ')
@@ -222,17 +181,49 @@ def analyze_tweet(tweet, sal_data, stat):
             stat['top_users'][author_id] += 1
             stat['cities_users'][author_id][gcc] += 1
 
+# Load, process and analyze twitter data
+def load_tweets(file_path, size, rank, sal_data):
+    file_size = os.path.getsize(file_path)
+    chunk_size = file_size // size
 
-def get_state(state):
-    state = state.lower()
-    if '(' not in state:
-        return state
-    else:
-        abbr = state[state.index("(") + 1: -1]
-        if abbr in state_abbr.keys():
-            return state_abbr[abbr]
+    start = rank * chunk_size
+    end = start + chunk_size if rank != size - 1 else file_size
 
+    stat = {
+        'tweets_cnt': [0] * 9,
+        'top_users': Counter(),
+        'cities_users': defaultdict(create_int_dict)
+    }
 
+    with open(file_path, 'rb') as file:
+        start, end = fix_batch_start_end(file, start, end, rank, size)
+        file.seek(start)
+        batch_size = end - start
+
+        if batch_size > batch_limit:
+            num_batch = (batch_size // batch_limit) + 1
+
+            for i in range(num_batch):
+                tmp_start = start + i * batch_limit
+                tmp_end = tmp_start + batch_limit if i != num_batch - 1 else end
+                tmp_start, tmp_end = fix_piece_start_end(file, tmp_start, tmp_end, i, num_batch - 1)
+
+                file.seek(tmp_start)
+                json_raw = pad_start + file.read(tmp_end - tmp_start) + pad_end
+                items = ijson.items(json_raw, 'item')
+                for tweet in items:
+                    analyze_tweet(tweet, sal_data, stat)
+
+        else:
+            json_raw = pad_start + file.read(end - start) + pad_end
+            items = ijson.items(json_raw, 'item')
+
+            for tweet in items:
+                analyze_tweet(tweet, sal_data, stat)
+
+    return stat
+
+# Encapsulate the whole process and return the stats
 def process():
     start_time = time.time()
     # MPI settings
@@ -240,8 +231,8 @@ def process():
     rank = comm.Get_rank()
     size = comm.Get_size()
 
-    sal_data = load_sal_data(sal_path)
-    batch = load_and_process_json(twitter_path, size, rank, sal_data)
+    sal_data = load_sal(sal_path)
+    batch = load_tweets(twitter_path, size, rank, sal_data)
     comm.Barrier()
     raw_twitter_stats = comm.gather(batch, root=0)
 
@@ -250,7 +241,7 @@ def process():
         return twitter_stats, start_time
     return None
 
-
+# Process stats and print the results
 def print_stats(results, start_time):
     stat = {
         'tweets_cnt': [0] * 9,
