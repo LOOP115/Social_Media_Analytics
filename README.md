@@ -50,14 +50,27 @@ mpiexec -n 8 python main.py big
 
 `sbatch 2n8c.slurm`
 
-#### Performance on `bigTwitter`
 
-| Methods                          | 1n1c     | 1n8c    | 2n8c    |
-| -------------------------------- |----------|---------|---------|
-| Read 1 tweet once and process    | 1082.72s | 143.54s | 141.67s |
-| Read 512KB data once and process | 350.56s  | 44.61s  | 46.31s  |
-| Read 16MB data once and process  | 334.14s  | 44.72s  | 45.43s  |
-| Read 1GB data once and process   | 401.96s  | 52.45s  | 46.99s  |
+
+### Performance on `bigTwitter`
+
+#### Advanced Suburb Matching
+
+| Method               | 1N1C    | 1N8C   | 2N8C   |
+| -------------------- | :------ | ------ | ------ |
+| Read 512KB data once | 394.70s | 50.44s | 50.62s |
+| Read 1MB data once   | 394.24s | 51.11s | 55.24s |
+| Read 16MB data once  | 403.25s | 52.9s  | 51.75s |
+| Read 1GB data once   | 405.11s | 52.91s | 55.44s |
+
+#### Simple Suburb Matching
+
+| Methods              | 1N1C     | 1N8C    | 2N8C    |
+| -------------------- | -------- | ------- | ------- |
+| Read 1 tweet once    | 1082.72s | 143.54s | 141.67s |
+| Read 512KB data once | 350.56s  | 44.61s  | 46.31s  |
+| Read 16MB data once  | 334.14s  | 44.72s  | 45.43s  |
+| Read 1GB data once   | 401.96s  | 52.45s  | 46.99s  |
 
 
 
