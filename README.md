@@ -65,7 +65,7 @@ mpiexec -n 8 python main.py big
 
 #### Simple Suburb Matching
 
-| Methods              | 1N1C     | 1N8C    | 2N8C    |
+| Method               | 1N1C     | 1N8C    | 2N8C    |
 | -------------------- | -------- | ------- | ------- |
 | Read 1 tweet once    | 1082.72s | 143.54s | 141.67s |
 | Read 512KB data once | 350.56s  | 44.61s  | 46.31s  |
