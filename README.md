@@ -60,7 +60,7 @@ mpiexec -n 8 python main.py big
 | -------------------- | :------ | ------ | ------ |
 | Read 512KB data once | 394.70s | 50.44s | 50.62s |
 | Read 1MB data once   | 394.24s | 51.11s | 55.24s |
-| Read 16MB data once  | 403.25s | 52.9s  | 51.75s |
+| Read 16MB data once  | 403.25s | 52.90s | 51.75s |
 | Read 1GB data once   | 405.11s | 52.91s | 55.44s |
 
 #### Simple Suburb Matching
