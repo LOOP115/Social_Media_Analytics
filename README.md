@@ -41,8 +41,8 @@ mpiexec -n 8 python main.py big
 | Resource                                    | Slurm                          | Output                       |
 | ------------------------------------------- | ------------------------------ | ---------------------------- |
 | 1 node and 1 core                           | [1n1c.slurm](slurm/1n1c.slurm) | [1n1c.out](outputs/1n1c.out) |
-| 1 node and 8 cores                          | [1n8c.slurm](1n8c.slurm)       | [1n8c.out](outputs/1n8c.out) |
-| 2 nodes and 8 cores (with 4 cores per node) | [2n8c.slurm](2n8c.slurm)       | [2n8c.out](outputs/2n8c.out) |
+| 1 node and 8 cores                          | [1n8c.slurm](slurm/1n8c.slurm) | [1n8c.out](outputs/1n8c.out) |
+| 2 nodes and 8 cores (with 4 cores per node) | [2n8c.slurm](slurm/2n8c.slurm) | [2n8c.out](outputs/2n8c.out) |
 
 `sbatch 1n1c.slurm`
 
