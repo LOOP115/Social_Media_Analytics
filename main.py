@@ -273,7 +273,7 @@ def print_stats(results, start_time):
 
     top_users = stat['top_users'].most_common(10)
     top_cities_users = dict(sorted(stat['cities_users'].items(),
-                                   key=lambda x: (len(x[1]), stat['top_users'][x[0]]), reverse=True))
+                                   key=lambda x: (len(x[1]), sum(x[1].values())), reverse=True))
 
     print("\nTask 1: Identify the Twitter accounts (users) that have made the most tweets")
     df_top_user = pd.DataFrame(top_users, columns=['Author Id', 'Number of Tweets Made'])
