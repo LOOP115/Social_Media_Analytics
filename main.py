@@ -13,13 +13,11 @@ data_paths = {"tiny": "data/tinyTwitter.json",
               "small": "data/smallTwitter.json",
               "big": "data/bigTwitter.json"}
 
-twitter_path = "data/tinyTwitter.json"
+twitter_path = "data/bigTwitter.json"
 args = sys.argv
 if len(args) > 1:
     data_type = args[1]
-    if data_type not in data_paths.keys():
-        print("Invalid argument, tinyTwitter will be processed as default.")
-    else:
+    if data_type in data_paths.keys():
         twitter_path = data_paths[data_type]
 
 sal_path = "data/sal.json"
@@ -89,6 +87,7 @@ rank_list = ['#1', '#2', '#3', '#4', '#5', '#6', '#7', '#8', '#9', '#10']
 def create_int_dict():
     return defaultdict(int)
 
+
 # Extract the state name
 def get_state(state):
     state = state.lower()
@@ -98,6 +97,7 @@ def get_state(state):
         abbr = state[(state.index("(") + 1): -1]
         if abbr in state_abbr.keys():
             return state_abbr[abbr]
+
 
 # Find the start of next twitter item from current file pointer
 def find_tweet_start(file, start):
@@ -111,6 +111,7 @@ def find_tweet_start(file, start):
                 start += len(next_line)
         start += len(line)
 
+
 # Find the end of current twitter item from current file pointer
 def find_tweet_end(file, end):
     while True:
@@ -123,6 +124,7 @@ def find_tweet_end(file, end):
             else:
                 end += len(next_line)
         end += len(line)
+
 
 # Modify the start and end pointers of the batch to ensure twitter items are complete
 def fix_batch_start_end(file, start, end, rank, size):
@@ -141,6 +143,7 @@ def fix_batch_start_end(file, start, end, rank, size):
 
     return start, end
 
+
 # Modify the start and end pointers of the piece to ensure twitter items are complete
 def fix_piece_start_end(file, start, end, index, tail):
     if index != 0:
@@ -153,6 +156,7 @@ def fix_piece_start_end(file, start, end, index, tail):
 
     return start, end
 
+
 # Load and process sal.json
 def load_sal(file):
     data = defaultdict(dict)
@@ -164,22 +168,24 @@ def load_sal(file):
                 data[state_dict[values['ste']].lower()][sub] = values['gcc']
     return data
 
+
 # Analyze each tweet and update stats
 def analyze_tweet(tweet, sal_data, stat):
     author_id = tweet['data']['author_id']
-    full_name = tweet['includes']['places'][0]['full_name'].split(', ')
-    suburb = re.match(r'^([^(]+)', full_name[0]).group(1).strip().lower()
+    stat['top_users'][author_id] += 1
 
-    if len(full_name) == 1:
+    location = tweet['includes']['places'][0]['full_name'].split(', ')
+    suburb = re.match(r'^([^(]+)', location[0]).group(1).strip().lower()
+    if len(location) == 1:
         return
 
-    state = get_state(full_name[1])
+    state = get_state(location[1])
     if state in sal_data.keys() and suburb in sal_data[state].keys():
         gcc = sal_data[state][suburb]
         if not re.match(rural_pattern, gcc):
             stat['tweets_cnt'][int(gcc[0]) - 1] += 1
-            stat['top_users'][author_id] += 1
             stat['cities_users'][author_id][gcc] += 1
+
 
 # Load, process and analyze twitter data
 def load_tweets(file_path, size, rank, sal_data):
@@ -190,8 +196,8 @@ def load_tweets(file_path, size, rank, sal_data):
     end = start + chunk_size if rank != size - 1 else file_size
 
     stat = {
-        'tweets_cnt': [0] * 9,
         'top_users': Counter(),
+        'tweets_cnt': [0] * 9,
         'cities_users': defaultdict(create_int_dict)
     }
 
@@ -223,6 +229,7 @@ def load_tweets(file_path, size, rank, sal_data):
 
     return stat
 
+
 # Encapsulate the whole process and return the stats
 def process():
     start_time = time.time()
@@ -241,18 +248,18 @@ def process():
         return twitter_stats, start_time
     return None
 
+
 # Process stats and print the results
 def print_stats(results, start_time):
     stat = {
-        'tweets_cnt': [0] * 9,
         'top_users': Counter(),
+        'tweets_cnt': [0] * 9,
         'cities_users': defaultdict(create_int_dict)
     }
 
     for result in results:
-
-        stat['tweets_cnt'] = [stat['tweets_cnt'][i] + result['tweets_cnt'][i] for i in range(9)]
         stat['top_users'] += result['top_users']
+        stat['tweets_cnt'] = [stat['tweets_cnt'][i] + result['tweets_cnt'][i] for i in range(9)]
 
         for author_id, cities in result['cities_users'].items():
             for key, value in cities.items():
@@ -262,30 +269,30 @@ def print_stats(results, start_time):
                     stat['cities_users'][author_id][key] = value
 
     top_users = stat['top_users'].most_common(10)
-    most_cities_users = dict(sorted(stat['cities_users'].items(),
-                                    key=lambda x: (len(x[1]), stat['top_users'][x[0]]), reverse=True))
+    top_cities_users = dict(sorted(stat['cities_users'].items(),
+                                   key=lambda x: (len(x[1]), stat['top_users'][x[0]]), reverse=True))
 
-    print("\nTask 1: Count the number of different tweets made in the Greater Capital cities of Australia")
-    gcc_cnt = {"Greater Capital City": gcc_full_list, "Number of Tweets Made": stat["tweets_cnt"]}
-    df_gcc_cnt = pd.DataFrame(data=gcc_cnt)
-    print(df_gcc_cnt.to_string(index=False))
-
-    print("\nTask 2: Identify the Twitter accounts (users) that have made the most tweets")
+    print("\nTask 1: Identify the Twitter accounts (users) that have made the most tweets")
     df_top_user = pd.DataFrame(top_users, columns=['Author Id', 'Number of Tweets Made'])
     df_top_user.insert(0, 'Rank', rank_list, True)
     print(df_top_user.to_string(index=False))
 
+    print("\nTask 2: Count the number of different tweets made in the Greater Capital cities of Australia")
+    gcc_cnt = {"Greater Capital City": gcc_full_list, "Number of Tweets Made": stat["tweets_cnt"]}
+    df_gcc_cnt = pd.DataFrame(data=gcc_cnt)
+    print(df_gcc_cnt.to_string(index=False))
+
     print("\nTask 3: Identify the users that have tweeted from the most different Greater Capital cities")
     n_uniq_city = []
-    for i in list(most_cities_users.values())[0:10]:
+    for i in list(top_cities_users.values())[0:10]:
         n_uniq_city.append(len(i))
 
-    df_single_city_cnt = pd.DataFrame(data=list(most_cities_users.values())[0:10])
+    df_single_city_cnt = pd.DataFrame(data=list(top_cities_users.values())[0:10])
     df_single_city_cnt = df_single_city_cnt.reindex(sorted(df_single_city_cnt.columns), axis=1)
     df_single_city_cnt['total_tw'] = df_single_city_cnt.sum(axis=1)
     df_single_city_cnt['n_uniq_city'] = n_uniq_city
-    df_single_city_cnt['Author Id'] = list(most_cities_users.keys())[0:10]
-    df_scc_output = pd.DataFrame(data={'Rank': rank_list, 'Author Id': list(most_cities_users.keys())[0:10]})
+    df_single_city_cnt['Author Id'] = list(top_cities_users.keys())[0:10]
+    df_scc_output = pd.DataFrame(data={'Rank': rank_list, 'Author Id': list(top_cities_users.keys())[0:10]})
 
     output_str_list = []
     for index, row in df_single_city_cnt.iterrows():

@@ -7,8 +7,6 @@
 #SBATCH --mail-user=jiahchen4@student.unimelb.edu.au
 #SBATCH --mail-type=ALL
 
-
-# Load required modules
 module load python/3.7.4
 module load mpi4py/3.0.2-timed-pingpong
 
@@ -19,14 +17,7 @@ pip install numpy
 pip install pandas
 pip install ijson
 
-
-# Launch multiple process python code
-echo "Processing tinyTwitter"
-time mpirun -np 1 python3 main.py tiny
-echo "Processing smallTwitter"
-time mpirun -np 1 python3 main.py small
-echo "Processing bigTwitter"
-time mpirun -np 1 python3 main.py big
+time mpirun -np 1 python3 main.py
 
 deactivate
 
