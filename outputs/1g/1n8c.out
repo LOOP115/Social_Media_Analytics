@@ -26,7 +26,7 @@ Rank           Author Id  Number of Tweets Made
 
 Task 2: Count the number of different tweets made in the Greater Capital cities of Australia
      Greater Capital City  Number of Tweets Made
-   1gsyd (Greater Sydney)                2116801
+   1gsyd (Greater Sydney)                2116799
 2gmel (Greater Melbourne)                2286229
  3gbri (Greater Brisbane)                 857917
  4gade (Greater Adelaide)                 462592
@@ -48,42 +48,40 @@ Rank           Author Id                                                   Numbe
   #9           601712763         8(#146 tweets - #44gsyd, #39gmel, #11gbri, #19gade, #14gper, #8ghob, #1gdar, #10acte)
  #10          2647302752             8(#80 tweets - #13gsyd, #16gmel, #32gbri, #3gade, #4gper, #5ghob, #3gdar, #4acte)
 
-Execution Time: 51.75s
+Execution Time: 52.91s
 
 
 
-real	0m53.446s
-user	3m11.618s
-sys	0m14.094s
-Job ID           : 46256846
+real	0m55.203s
+user	6m14.708s
+sys	0m41.634s
+Job ID           : 46257054
 Cluster          : spartan
 User/Project     : jiahchen4/comp90024
-Nodes            : 2
-Wall-clock time  : 00:01:20 / 01:00:00
+Nodes            : 1
+Wall-clock time  : 00:02:15 / 01:00:00
 
-Displaying overall resources usage from 2023-04-10 19:24:01 to 2023-04-10 19:25:21:
+Displaying overall resources usage from 2023-04-10 19:37:21 to 2023-04-10 19:39:36:
 
 NODE            CPU#        TOT%   ( USR   / SYS   / WIO   / IDLE  ) 
 
-spartan-bm008 : 
-                CPU# 1    : 57.9   (  53.0 /   4.9 /   0.0 /  42.1 ) 
-                CPU# 2    : 66.3   (  60.1 /   6.2 /   0.7 /  33.0 ) 
-                CPU# 3    : 67.5   (  62.6 /   5.0 /   0.2 /  32.3 ) 
-                CPU# 4    : 55.2   (  50.5 /   4.7 /   0.0 /  44.8 ) 
-
-spartan-bm014 : 
-                CPU# 5    : 44.8   (  40.7 /   4.0 /   0.1 /  55.2 ) 
-                CPU# 6    : 44.6   (  40.8 /   3.8 /   0.0 /  55.3 ) 
-                CPU# 7    : 44.7   (  40.6 /   4.2 /   0.0 /  55.3 ) 
-                CPU# 8    : 44.4   (  40.5 /   3.9 /   0.0 /  55.6 ) 
+spartan-bm016 : 
+                CPU# 1    : 32.4   (  28.7 /   3.7 /   1.3 /  66.3 ) 
+                CPU# 2    : 32.5   (  28.4 /   4.2 /   0.2 /  67.2 ) 
+                CPU# 3    : 32.2   (  28.5 /   3.7 /   0.1 /  67.7 ) 
+                CPU# 4    : 32.5   (  28.7 /   3.8 /   0.9 /  66.5 ) 
+                CPU# 5    : 31.7   (  27.9 /   3.8 /   0.0 /  68.2 ) 
+                CPU# 6    : 32.1   (  28.2 /   3.9 /   0.4 /  67.5 ) 
+                CPU# 7    : 42.0   (  37.9 /   4.0 /   0.8 /  57.3 ) 
+                CPU# 8    : 32.3   (  28.7 /   3.6 /   0.1 /  67.6 ) 
 
 
 Allocated CPUs            : 8    
   CPUs with usage <25%    : 0    
-  CPUs with usage <50%    : 4    
-  CPUs with usage >50%    : 4    
+  CPUs with usage <50%    : 8    
+  CPUs with usage >50%    : 0    
 
-Memory used (RAM)         : 2.3%  [741MB of 32000MB]
+Memory used (RAM)         : 29.3%  [9377MB of 32000MB]
 
 --------------------------------------------
 

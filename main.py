@@ -8,7 +8,6 @@ import os
 import sys
 import ijson
 
-
 data_paths = {"tiny": "data/tinyTwitter.json",
               "small": "data/smallTwitter.json",
               "big": "data/bigTwitter.json"}
@@ -22,19 +21,7 @@ if len(args) > 1:
 
 sal_path = "data/sal.json"
 
-gcc_list = [
-    "1gsyd",
-    "2gmel",
-    "3gbri",
-    "4gade",
-    "5gper",
-    "6ghob",
-    "7gdar",
-    "8acte",
-    "9oter"
-]
-
-gcc_full_list = [
+gcc_names = [
     "1gsyd (Greater Sydney)",
     "2gmel (Greater Melbourne)",
     "3gbri (Greater Brisbane)",
@@ -42,20 +29,39 @@ gcc_full_list = [
     "5gper (Greater Perth)",
     "6ghob (Greater Hobart)",
     "7gdar (Greater Darwin)",
-    "8acte (Greater Canberra)",
-    "9oter (Greater Other Territories)"
+    "8acte (Greater Canberra)"
 ]
 
-state_dict = {
-    '1': 'New South Wales',
-    '2': 'Victoria',
-    '3': 'Queensland',
-    '4': 'South Australia',
-    '5': 'Western Australia',
-    '6': 'Tasmania',
-    '7': 'Northern Territory',
-    '8': 'Australian Capital Territory',
-    '9': 'Other Territories'
+states = ['new south wales',
+          'victoria',
+          'queensland',
+          'south australia',
+          'western australia',
+          'tasmania',
+          'northern territory',
+          'australian capital territory'
+          ]
+
+state_gcc = {
+    'new south wales': '1gsyd',
+    'victoria': '2gmel',
+    'queensland': '3gbri',
+    'south australia': '4gade',
+    'western australia': '5gper',
+    'tasmania': '6ghob',
+    'northern territory': '7gdar',
+    'australian capital territory': '8acte'
+}
+
+capitals = {
+    'sydney': 'new south wales',
+    'melbourne': 'victoria',
+    'brisbane': 'queensland',
+    'adelaide': 'south australia',
+    'perth': 'western australia',
+    'hobart': 'tasmania',
+    'darwin': 'northern territory',
+    'canberra': 'australian capital territory'
 }
 
 state_abbr = {
@@ -79,24 +85,13 @@ tweet_head = b'^    "_id"'
 pad_start = b'[\n'
 pad_end = b'  }\n]\n'
 
-batch_limit = 1024 * 1024 * 16
+batch_limit = 1024 * 1024
 
 rank_list = ['#1', '#2', '#3', '#4', '#5', '#6', '#7', '#8', '#9', '#10']
 
 
 def create_int_dict():
     return defaultdict(int)
-
-
-# Extract the state name
-def get_state(state):
-    state = state.lower()
-    if '(' not in state:
-        return state
-    else:
-        abbr = state[(state.index("(") + 1): -1]
-        if abbr in state_abbr.keys():
-            return state_abbr[abbr]
 
 
 # Find the start of next twitter item from current file pointer
@@ -159,14 +154,26 @@ def fix_piece_start_end(file, start, end, index, tail):
 
 # Load and process sal.json
 def load_sal(file):
-    data = defaultdict(dict)
+    data = defaultdict(list)
     with open(file, 'r', encoding='utf-8') as file:
         suburbs_data = ijson.items(file, '')
         for suburbs in suburbs_data:
             for suburb, values in suburbs.items():
                 sub = re.match(r'^([^(]+)', suburb).group(1).strip().lower()
-                data[state_dict[values['ste']].lower()][sub] = values['gcc']
+                # Filter out rural areas
+                gcc = values['gcc']
+                if values['ste'] != "9" and not re.match(rural_pattern, gcc):
+                    data[states[int(gcc[0]) - 1]].append(sub)
     return data
+
+
+# Extract the state name
+def get_state(state):
+    state = state.lower()
+    if '(' in state:
+        abbr = state[(state.index("(") + 1): -1]
+        return state_abbr[abbr] if abbr in state_abbr.keys() else state
+    return capitals[state] if state in capitals.keys() else state
 
 
 # Analyze each tweet and update stats
@@ -176,15 +183,14 @@ def analyze_tweet(tweet, sal_data, stat):
 
     location = tweet['includes']['places'][0]['full_name'].split(', ')
     suburb = re.match(r'^([^(]+)', location[0]).group(1).strip().lower()
-    if len(location) == 1:
+    if len(location) < 2:
         return
 
     state = get_state(location[1])
-    if state in sal_data.keys() and suburb in sal_data[state].keys():
-        gcc = sal_data[state][suburb]
-        if not re.match(rural_pattern, gcc):
-            stat['tweets_cnt'][int(gcc[0]) - 1] += 1
-            stat['cities_users'][author_id][gcc] += 1
+    if state in states and suburb in sal_data[state]:
+        gcc = state_gcc[state]
+        stat['tweets_cnt'][int(gcc[0]) - 1] += 1
+        stat['cities_users'][author_id][gcc] += 1
 
 
 # Load, process and analyze twitter data
@@ -197,7 +203,7 @@ def load_tweets(file_path, size, rank, sal_data):
 
     stat = {
         'top_users': Counter(),
-        'tweets_cnt': [0] * 9,
+        'tweets_cnt': [0] * 8,
         'cities_users': defaultdict(create_int_dict)
     }
 
@@ -217,15 +223,12 @@ def load_tweets(file_path, size, rank, sal_data):
                 file.seek(tmp_start)
                 json_raw = pad_start + file.read(tmp_end - tmp_start) + pad_end
                 items = ijson.items(json_raw, 'item')
-                for tweet in items:
-                    analyze_tweet(tweet, sal_data, stat)
+                [analyze_tweet(tweet, sal_data, stat) for tweet in items]
 
         else:
             json_raw = pad_start + file.read(end - start) + pad_end
             items = ijson.items(json_raw, 'item')
-
-            for tweet in items:
-                analyze_tweet(tweet, sal_data, stat)
+            [analyze_tweet(tweet, sal_data, stat) for tweet in items]
 
     return stat
 
@@ -253,13 +256,13 @@ def process():
 def print_stats(results, start_time):
     stat = {
         'top_users': Counter(),
-        'tweets_cnt': [0] * 9,
+        'tweets_cnt': [0] * 8,
         'cities_users': defaultdict(create_int_dict)
     }
 
     for result in results:
         stat['top_users'] += result['top_users']
-        stat['tweets_cnt'] = [stat['tweets_cnt'][i] + result['tweets_cnt'][i] for i in range(9)]
+        stat['tweets_cnt'] = [stat['tweets_cnt'][i] + result['tweets_cnt'][i] for i in range(8)]
 
         for author_id, cities in result['cities_users'].items():
             for key, value in cities.items():
@@ -278,15 +281,12 @@ def print_stats(results, start_time):
     print(df_top_user.to_string(index=False))
 
     print("\nTask 2: Count the number of different tweets made in the Greater Capital cities of Australia")
-    gcc_cnt = {"Greater Capital City": gcc_full_list, "Number of Tweets Made": stat["tweets_cnt"]}
+    gcc_cnt = {"Greater Capital City": gcc_names, "Number of Tweets Made": stat["tweets_cnt"]}
     df_gcc_cnt = pd.DataFrame(data=gcc_cnt)
     print(df_gcc_cnt.to_string(index=False))
 
     print("\nTask 3: Identify the users that have tweeted from the most different Greater Capital cities")
-    n_uniq_city = []
-    for i in list(top_cities_users.values())[0:10]:
-        n_uniq_city.append(len(i))
-
+    n_uniq_city = [len(i) for i in list(top_cities_users.values())[0:10]]
     df_single_city_cnt = pd.DataFrame(data=list(top_cities_users.values())[0:10])
     df_single_city_cnt = df_single_city_cnt.reindex(sorted(df_single_city_cnt.columns), axis=1)
     df_single_city_cnt['total_tw'] = df_single_city_cnt.sum(axis=1)

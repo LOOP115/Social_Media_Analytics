@@ -13,7 +13,7 @@ Requirement already satisfied: ijson in /home/jiahchen4/virtualenv/python3.7.4/l
 
 Task 1: Identify the Twitter accounts (users) that have made the most tweets
 Rank           Author Id  Number of Tweets Made
-  #1 1498063511204761601                  68477
+  #1 1498063511204761601                  68478
   #2 1089023364973219840                  28128
   #3  826332877457481728                  27718
   #4 1250331934242123776                  25350
@@ -21,17 +21,17 @@ Rank           Author Id  Number of Tweets Made
   #6 1183144981252280322                  20765
   #7 1270672820792508417                  20503
   #8  820431428835885059                  20063
-  #9  778785859030003712                  19403
+  #9  778785859030003712                  19404
  #10 1104295492433764353                  18781
 
 Task 2: Count the number of different tweets made in the Greater Capital cities of Australia
      Greater Capital City  Number of Tweets Made
-   1gsyd (Greater Sydney)                2116801
-2gmel (Greater Melbourne)                2286229
- 3gbri (Greater Brisbane)                 857917
- 4gade (Greater Adelaide)                 462592
-    5gper (Greater Perth)                 589319
-   6ghob (Greater Hobart)                  90672
+   1gsyd (Greater Sydney)                2116818
+2gmel (Greater Melbourne)                2286247
+ 3gbri (Greater Brisbane)                 857926
+ 4gade (Greater Adelaide)                 462597
+    5gper (Greater Perth)                 589328
+   6ghob (Greater Hobart)                  90673
    7gdar (Greater Darwin)                  46357
  8acte (Greater Canberra)                 202477
 
@@ -48,42 +48,33 @@ Rank           Author Id                                                   Numbe
   #9           601712763         8(#146 tweets - #44gsyd, #39gmel, #11gbri, #19gade, #14gper, #8ghob, #1gdar, #10acte)
  #10          2647302752             8(#80 tweets - #13gsyd, #16gmel, #32gbri, #3gade, #4gper, #5ghob, #3gdar, #4acte)
 
-Execution Time: 51.75s
+Execution Time: 394.7s
 
 
 
-real	0m53.446s
-user	3m11.618s
-sys	0m14.094s
-Job ID           : 46256846
+real	6m35.825s
+user	6m22.539s
+sys	0m11.695s
+Job ID           : 46257196
 Cluster          : spartan
 User/Project     : jiahchen4/comp90024
-Nodes            : 2
-Wall-clock time  : 00:01:20 / 01:00:00
+Nodes            : 1
+Wall-clock time  : 00:07:01 / 01:00:00
 
-Displaying overall resources usage from 2023-04-10 19:24:01 to 2023-04-10 19:25:21:
+Displaying overall resources usage from 2023-04-10 19:48:36 to 2023-04-10 19:55:37:
 
 NODE            CPU#        TOT%   ( USR   / SYS   / WIO   / IDLE  ) 
 
-spartan-bm008 : 
-                CPU# 1    : 57.9   (  53.0 /   4.9 /   0.0 /  42.1 ) 
-                CPU# 2    : 66.3   (  60.1 /   6.2 /   0.7 /  33.0 ) 
-                CPU# 3    : 67.5   (  62.6 /   5.0 /   0.2 /  32.3 ) 
-                CPU# 4    : 55.2   (  50.5 /   4.7 /   0.0 /  44.8 ) 
-
-spartan-bm014 : 
-                CPU# 5    : 44.8   (  40.7 /   4.0 /   0.1 /  55.2 ) 
-                CPU# 6    : 44.6   (  40.8 /   3.8 /   0.0 /  55.3 ) 
-                CPU# 7    : 44.7   (  40.6 /   4.2 /   0.0 /  55.3 ) 
-                CPU# 8    : 44.4   (  40.5 /   3.9 /   0.0 /  55.6 ) 
+spartan-bm022 : 
+                CPU# 1    : 96.5   (  92.9 /   3.5 /   0.2 /   3.3 ) 
 
 
-Allocated CPUs            : 8    
+Allocated CPUs            : 1    
   CPUs with usage <25%    : 0    
-  CPUs with usage <50%    : 4    
-  CPUs with usage >50%    : 4    
+  CPUs with usage <50%    : 0    
+  CPUs with usage >50%    : 1    
 
-Memory used (RAM)         : 2.3%  [741MB of 32000MB]
+Memory used (RAM)         : 4.9%  [195MB of 4000MB]
 
 --------------------------------------------
 
